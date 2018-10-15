@@ -2,12 +2,13 @@
 class task
 {
 public:
+	int id;
 	int time;
 	int earliness;
 	int tardiness;
 
 	task();
-	task(int time, int earliness, int tardiness);
+	task(int id, int time, int earliness, int tardiness);
 	~task();
 };
 
