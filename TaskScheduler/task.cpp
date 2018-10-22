@@ -13,6 +13,7 @@ task::task(int id, int time, int earliness, int tardiness)
 	this->time = time;
 	this->earliness = earliness;
 	this->tardiness = tardiness;
+	this->start = 0;
 }
 
 
