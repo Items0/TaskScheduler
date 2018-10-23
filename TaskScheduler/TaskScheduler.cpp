@@ -5,6 +5,7 @@
 #include "task.h"
 #include <ctime>
 #include <cstdlib>
+#include <string>
 
 using namespace std;
 
@@ -13,10 +14,10 @@ int main()
 	srand(time(NULL));
 
 	fstream handler("../Instances/sch10.txt", ios::in);
-	fstream results("../results.txt", ios::out);
+	fstream results;
 	int n;
 	int totalTime;
-	float h = 0.6;
+	float h = 0.8;
 	handler >> n;
 	vector <task> tab;
 	vector <task> schedule;
@@ -79,11 +80,14 @@ int main()
 		cout << "Target function: " << target << "\n\n";
 
 		//save results
+		results.open("../Results/sch" + to_string(n) + "_" + to_string(i+1) + "_" + to_string(static_cast<int>(h*10)) + ".txt", ios::out);
+		results << h * 10 << "\n" << target << "\n" << n << "\n" << "r\n";
 		for (int i = 0; i < tab.size(); i++)
 		{
-			results << schedule[i].id << " " << schedule[i].time << " " << schedule[i].earliness << " " << schedule[i].tardiness << "\n";
+			results << schedule[i].time << " " << schedule[i].earliness << " " << schedule[i].tardiness << "\n";
 		}
-		results << "Target function: " << target << "\n\n";
+		results.close();
+		
 		tab.clear();
 		schedule.clear();
 	}
