@@ -9,8 +9,66 @@
 
 using namespace std;
 
+
+void validate(string filename)
+{
+	fstream handler("../Validator/" + filename, ios::in);
+	vector <task> schedule;
+	int h;
+	int target;
+	int n;
+	int r;
+	int totalTime = 0;
+	handler >> h >> target >> n >> r;
+
+	int time, earliness, tardiness;
+	for (int k = 0; k < n; k++)
+	{
+		handler >> time >> earliness >> tardiness;
+		schedule.emplace_back(k + 1, time, earliness, tardiness);
+		totalTime += time;
+	}
+
+	int dueDate = floor(totalTime * 1.0 * h / 10);
+
+	schedule[0].start = r;
+
+	//set start time
+	for (int j = 1; j < schedule.size(); j++)
+	{
+		schedule[j].start = schedule[j - 1].start + schedule[j - 1].time;
+	}
+
+	//calculate value of target function
+	int checkTarget = 0;
+	int endTime;
+	for (int j = 0; j < schedule.size(); j++)
+	{
+		endTime = schedule[j].start + schedule[j].time;
+		if (endTime < dueDate)
+		{
+			checkTarget += (dueDate - endTime) * schedule[j].earliness;
+		}
+		if (endTime > dueDate)
+		{
+			checkTarget += (endTime - dueDate) * schedule[j].tardiness;
+		}
+	}
+
+	if (checkTarget == target)
+	{
+		cout << "OK!" << "\t" << target << "\n";
+	}
+	else
+	{
+		cout << "Error! Different values\n";
+	}
+}
+
+
 int main()
 {
+	/*
 	srand(time(NULL));
 
 	fstream handler("../Instances/sch10.txt", ios::in);
@@ -48,6 +106,10 @@ int main()
 			swap(schedule[selectedIndex1], schedule[selectedIndex2]);
 		}
 
+		//r setting
+		int r = 0;
+		schedule[0].start = r;
+
 		//set start time
 		for (int j = 1; j < tab.size(); j++)
 		{
@@ -80,11 +142,11 @@ int main()
 		cout << "Target function: " << target << "\n\n";
 
 		//save results
-		results.open("../Results/sch" + to_string(n) + "_" + to_string(i+1) + "_" + to_string(static_cast<int>(h*10)) + ".txt", ios::out);
-		results << h * 10 << "\n" << target << "\n" << n << "\n" << "r\n";
+		results.open("../Results/sch" + to_string(operationNum) + "_" + to_string(i+1) + "_" + to_string(static_cast<int>(h*10)) + ".txt", ios::out);
+		results << h * 10 << "\n" << target << "\n" << operationNum << "\n" << r << "\n";
 		for (int i = 0; i < tab.size(); i++)
 		{
-			results << schedule[i].time << " " << schedule[i].earliness << " " << schedule[i].tardiness << "\n";
+			results << schedule[i].time << "\t" << schedule[i].earliness << "\t" << schedule[i].tardiness << "\n";
 		}
 		results.close();
 		
@@ -92,5 +154,9 @@ int main()
 		schedule.clear();
 	}
 	handler.close();
+	*/
+
+	validate("sch500_1_2.txt");
 }
+
 
