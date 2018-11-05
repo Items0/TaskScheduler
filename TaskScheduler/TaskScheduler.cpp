@@ -94,11 +94,11 @@ int main()
 {
 	srand(time(NULL));
 
-	fstream handler("../Instances/sch10.txt", ios::in);
+	fstream handler("../Instances/sch500.txt", ios::in);
 	fstream results;
 	int n;
 	int totalTime;
-	float h = 0.8;
+	float h = 0.6;
 	handler >> n;
 	vector <task> tabEarliness;
 	vector <task> tabTardiness;
@@ -129,65 +129,72 @@ int main()
 		}
 		int dueDate = floor(totalTime * h);
 		cout << "#" << i + 1 << " Total time: " << totalTime << " Due date: " << dueDate << "\n";
-		
+
 		//sort (by earliness and tardiness) scheduling
 		sort(tabEarliness.begin(), tabEarliness.end(), compareEarliness);
 		sort(tabTardiness.rbegin(), tabTardiness.rend(), compareTardiness); //descending sort
 		schedule = tabEarliness;
-		schedule.insert(schedule.end(), tabTardiness.begin(), tabTardiness.end()); // copy vector
+		schedule.insert(schedule.end(), tabTardiness.begin(), tabTardiness.end()); //copy vector
 
 		//r setting
-		int r = 0;
-		schedule[0].start = r;
-
-		//set start time
-		for (int j = 1; j < schedule.size(); j++)
-		{
-			schedule[j].start = schedule[j - 1].start + schedule[j - 1].time;
-		}
-
-		//calculate value of target function
-		int target = 0;
+		int target;
 		int endTime;
-		for (int j = 0; j < schedule.size(); j++)
+		int globalTarget;
+		int globalR = 0;
+		int step = max(1, static_cast<int>(round(1.0 * dueDate / 100)));
+		for (int r = 0; r <= dueDate / 2; r += step)
 		{
-			endTime = schedule[j].start + schedule[j].time;
-			if (endTime < dueDate)
-			{
-				target += (dueDate - endTime) * schedule[j].earliness;
-			}
-			if (endTime > dueDate)
-			{
-				target += (endTime - dueDate) * schedule[j].tardiness;
-			}
-		}
+			schedule[0].start = r;
 
-		
-		
-		//display values
-		/*
-		for (int i = 0; i < tab.size(); i++)
-		{
-			cout << tab[i].id << " " << tab[i].time << " " << tab[i].earliness << " " << tab[i].tardiness << "\n";
+			//set start time
+			for (int j = 1; j < schedule.size(); j++)
+			{
+				schedule[j].start = schedule[j - 1].start + schedule[j - 1].time;
+			}
+
+			//calculate value of target function
+			target = 0;
+			for (int j = 0; j < schedule.size(); j++)
+			{
+				endTime = schedule[j].start + schedule[j].time;
+				if (endTime < dueDate)
+				{
+					target += (dueDate - endTime) * schedule[j].earliness;
+				}
+				if (endTime > dueDate)
+				{
+					target += (endTime - dueDate) * schedule[j].tardiness;
+				}
+			}
+			if (r == 0)
+			{
+				globalTarget = target;
+				cout << "r=0, " << target << "\t";
+			}
+
+			if (target < globalTarget)
+			{
+				globalTarget = target;
+				globalR = r;
+			}
 		}
-		cout << "Target function: " << target << "\n\n";
-		*/
+		cout << "r=" << globalR << ", " << globalTarget << endl;
 
 		//save results
-		results.open("../Results/sch" + to_string(operationNum) + "_" + to_string(i+1) + "_" + to_string(static_cast<int>(h*10)) + ".txt", ios::out);
-		results << h * 10 << "\n" << target << "\n" << operationNum << "\n" << r << "\n";
+		results.open("../Results/sch" + to_string(operationNum) + "_" + to_string(i + 1) + "_" + to_string(static_cast<int>(h * 10)) + ".txt", ios::out);
+		results << h * 10 << "\n" << globalTarget << "\n" << operationNum << "\n" << globalR << "\n";
 		for (int i = 0; i < schedule.size(); i++)
 		{
 			results << schedule[i].time << "\t" << schedule[i].earliness << "\t" << schedule[i].tardiness << "\n";
 		}
 		results.close();
-		
+
 		tabEarliness.clear();
 		tabTardiness.clear();
 		schedule.clear();
 	}
 	handler.close();
-	
+
 
 	//validate("sch500_1_2.txt");
 }
