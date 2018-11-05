@@ -7,9 +7,10 @@
 #include <cstdlib>
 #include <string>
 #include <algorithm>
+#include <chrono>
+#include <ctime>
 
 using namespace std;
-
 
 void validate(string filename)
 {
@@ -127,8 +128,11 @@ int main()
 			}
 			totalTime += time;
 		}
+
+		chrono::time_point <chrono::system_clock> timeStart, timeEnd;
+		timeStart = chrono::system_clock::now();
 		int dueDate = floor(totalTime * h);
-		cout << "#" << i + 1 << " Total time: " << totalTime << " Due date: " << dueDate << "\n";
+		//cout << "#" << i + 1 << " Total time: " << totalTime << " Due date: " << dueDate << "\n";
 
 		//sort (by earliness and tardiness) scheduling
 		sort(tabEarliness.begin(), tabEarliness.end(), compareEarliness);
@@ -178,8 +182,12 @@ int main()
 				globalR = r;
 			}
 		}
-		cout << "r=" << globalR << ", " << globalTarget << endl;
 
+		timeEnd = chrono::system_clock::now();
+		chrono::duration <double>  processingTime = timeEnd - timeStart;
+
+		cout << "r=" << globalR << ", " << globalTarget << endl;
+		cout << "processingTime: " << processingTime.count() << endl;
 		//save results
 		results.open("../Results/sch" + to_string(operationNum) + "_" + to_string(i + 1) + "_" + to_string(static_cast<int>(h * 10)) + ".txt", ios::out);
 		results << h * 10 << "\n" << globalTarget << "\n" << operationNum << "\n" << globalR << "\n";
@@ -196,7 +204,7 @@ int main()
 	handler.close();
 
 
-	//validate("sch500_1_2.txt");
+	//validate("sch100_10_6.txt");
 }
 
 
