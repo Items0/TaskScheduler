@@ -6,6 +6,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <string>
+#include <algorithm>
 
 using namespace std;
 
@@ -65,10 +66,32 @@ void validate(string filename)
 	}
 }
 
+bool compareEarliness(task &a, task &b)
+{
+	if (a.earliness != b.earliness)
+	{
+		return (a.earliness < b.earliness);
+	}
+	else
+	{
+		return (a.time > b.time);
+	}
+}
+
+bool compareTardiness(task &a, task &b)
+{
+	if (a.tardiness != b.tardiness)
+	{
+		return (a.tardiness < b.tardiness);
+	}
+	else
+	{
+		return (a.time > b.time);
+	}
+}
 
 int main()
 {
-	/*
 	srand(time(NULL));
 
 	fstream handler("../Instances/sch10.txt", ios::in);
@@ -77,8 +100,10 @@ int main()
 	int totalTime;
 	float h = 0.8;
 	handler >> n;
-	vector <task> tab;
+	vector <task> tabEarliness;
+	vector <task> tabTardiness;
 	vector <task> schedule;
+
 	for (int i = 0; i < n; i++)
 	{
 		int operationNum;
@@ -87,31 +112,36 @@ int main()
 		int earliness;
 		int tardiness;
 		totalTime = 0;
+
 		//load values
 		for (int k = 0; k < operationNum; k++)
 		{
 			handler >> time >> earliness >> tardiness;
-			tab.emplace_back(k + 1, time, earliness, tardiness);
+			if (earliness < tardiness)
+			{
+				tabEarliness.emplace_back(k + 1, time, earliness, tardiness);
+			}
+			else
+			{
+				tabTardiness.emplace_back(k + 1, time, earliness, tardiness);
+			}
 			totalTime += time;
 		}
-		int dueDate = floor(totalTime * h); // round or floor()?
+		int dueDate = floor(totalTime * h);
 		cout << "#" << i + 1 << " Total time: " << totalTime << " Due date: " << dueDate << "\n";
 		
-		//naive scheduling
-		schedule = tab;
-		for (int z = 0; z < operationNum / 2; z++)
-		{
-			int selectedIndex1 = rand() % tab.size();
-			int selectedIndex2 = rand() % tab.size();
-			swap(schedule[selectedIndex1], schedule[selectedIndex2]);
-		}
+		//sort (by earliness and tardiness) scheduling
+		sort(tabEarliness.begin(), tabEarliness.end(), compareEarliness);
+		sort(tabTardiness.rbegin(), tabTardiness.rend(), compareTardiness); //descending sort
+		schedule = tabEarliness;
+		schedule.insert(schedule.end(), tabTardiness.begin(), tabTardiness.end()); // copy vector
 
 		//r setting
 		int r = 0;
 		schedule[0].start = r;
 
 		//set start time
-		for (int j = 1; j < tab.size(); j++)
+		for (int j = 1; j < schedule.size(); j++)
 		{
 			schedule[j].start = schedule[j - 1].start + schedule[j - 1].time;
 		}
@@ -119,7 +149,7 @@ int main()
 		//calculate value of target function
 		int target = 0;
 		int endTime;
-		for (int j = 0; j < tab.size(); j++)
+		for (int j = 0; j < schedule.size(); j++)
 		{
 			endTime = schedule[j].start + schedule[j].time;
 			if (endTime < dueDate)
@@ -135,28 +165,31 @@ int main()
 		
 		
 		//display values
+		/*
 		for (int i = 0; i < tab.size(); i++)
 		{
 			cout << tab[i].id << " " << tab[i].time << " " << tab[i].earliness << " " << tab[i].tardiness << "\n";
 		}
 		cout << "Target function: " << target << "\n\n";
+		*/
 
 		//save results
 		results.open("../Results/sch" + to_string(operationNum) + "_" + to_string(i+1) + "_" + to_string(static_cast<int>(h*10)) + ".txt", ios::out);
 		results << h * 10 << "\n" << target << "\n" << operationNum << "\n" << r << "\n";
-		for (int i = 0; i < tab.size(); i++)
+		for (int i = 0; i < schedule.size(); i++)
 		{
 			results << schedule[i].time << "\t" << schedule[i].earliness << "\t" << schedule[i].tardiness << "\n";
 		}
 		results.close();
 		
-		tab.clear();
+		tabEarliness.clear();
+		tabTardiness.clear();
 		schedule.clear();
 	}
 	handler.close();
-	*/
+	
 
-	validate("sch500_1_2.txt");
+	//validate("sch500_1_2.txt");
 }
 
 
