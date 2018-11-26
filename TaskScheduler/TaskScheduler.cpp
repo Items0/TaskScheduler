@@ -91,6 +91,27 @@ bool compareTardiness(task &a, task &b)
 	}
 }
 
+vector <vector <task>> generateInitInstances(vector <task> &schedule, int instancesNumber)
+{
+	vector <vector <task>> instances(instancesNumber, schedule);
+	int randMultiply = 2;
+	for (int i = 0; i < instances.size(); i++)
+	{
+		int maxIndex = instances[i].size();
+		for (int k = 0; k < maxIndex * randMultiply; k++)
+		{
+			int index1 = rand() % maxIndex;
+			int index2;
+			do
+			{
+				index2 = rand() % maxIndex;
+			} while (index1 == index2);
+			swap(instances[i][index1], instances[i][index2]);
+		}
+	}
+	return instances;
+}
+
 void mutation(vector <task> &schedule)
 {
 	int index1 = rand() % schedule.size();
