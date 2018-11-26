@@ -173,7 +173,7 @@ int main()
 			if (r == 0)
 			{
 				globalTarget = target;
-				cout << "r=0, " << target << "\t";
+				//cout << "r=0, " << target << "\t";
 			}
 
 			if (target < globalTarget)
@@ -186,8 +186,8 @@ int main()
 		timeEnd = chrono::system_clock::now();
 		chrono::duration <double>  processingTime = timeEnd - timeStart;
 
-		cout << "r=" << globalR << ", " << globalTarget << endl;
-		cout << "processingTime: " << processingTime.count() << endl;
+		//cout << "r=" << globalR << ", " << globalTarget << endl;
+		cout << "#" << i + 1 << " processingTime: " << processingTime.count() << endl;
 		//save results
 		results.open("../Results/sch" + to_string(operationNum) + "_" + to_string(i + 1) + "_" + to_string(static_cast<int>(h * 10)) + ".txt", ios::out);
 		results << h * 10 << "\n" << globalTarget << "\n" << operationNum << "\n" << globalR << "\n";
