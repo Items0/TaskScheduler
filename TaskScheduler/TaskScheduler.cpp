@@ -91,6 +91,21 @@ bool compareTardiness(task &a, task &b)
 	}
 }
 
+vector <task> mutation(vector <task> &schedule)
+{
+
+}
+
+vector <task> crossover(vector <task> &schedule)
+{
+
+}
+
+vector <vector <task> >selection(vector <vector <task> >&instances)
+{
+
+}
+
 int main()
 {
 	srand(time(NULL));
@@ -104,6 +119,12 @@ int main()
 	vector <task> tabEarliness;
 	vector <task> tabTardiness;
 	vector <task> schedule;
+
+	//ARGS
+	int instancesNumber = 30;
+	int mutationChance = 20;
+	int crossOverChance = 10;
+	int improveRate = 10;
 
 	for (int i = 0; i < n; i++)
 	{
