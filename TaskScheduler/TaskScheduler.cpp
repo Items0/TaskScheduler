@@ -91,19 +91,25 @@ bool compareTardiness(task &a, task &b)
 	}
 }
 
-vector <task> mutation(vector <task> &schedule)
+void mutation(vector <task> &schedule)
 {
-
+	int index1 = rand() % schedule.size();
+	int index2;
+	do
+	{
+		index2 = rand() % schedule.size();
+	} while (index1 == index2);
+	swap(schedule[index1], schedule[index2]);
 }
 
-vector <task> crossover(vector <task> &schedule)
+vector <task> crossover(vector <task> scheduleA, vector <task> scheduleB)
 {
-
+	return scheduleA;
 }
 
-vector <vector <task> >selection(vector <vector <task> >&instances)
+vector <vector <task> >selection(vector <vector <task> >&instances, int intancesNumber)
 {
-
+	return instances;
 }
 
 int main()
