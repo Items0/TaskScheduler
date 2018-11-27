@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include "task.h"
+#include "instance.h"
 #include <ctime>
 #include <cstdlib>
 #include <string>
@@ -91,13 +92,64 @@ bool compareTardiness(task &a, task &b)
 	}
 }
 
-vector <vector <task>> generateInitInstances(vector <task> &schedule, int instancesNumber)
+int rCalculate(vector <task> schedule, int dueDate)
 {
-	vector <vector <task>> instances(instancesNumber, schedule);
-	int randMultiply = 2;
-	for (int i = 0; i < instances.size(); i++)
+	int target;
+	int endTime;
+	int globalTarget;
+	int globalR = 0;
+	int step = max(1, static_cast<int>(round(1.0 * dueDate / 100)));
+	for (int r = 0; r <= dueDate / 2; r += step)
 	{
-		int maxIndex = instances[i].size();
+		schedule[0].start = r;
+
+		//set start time
+		for (int j = 1; j < schedule.size(); j++)
+		{
+			schedule[j].start = schedule[j - 1].start + schedule[j - 1].time;
+		}
+
+		//calculate value of target function
+		target = 0;
+		for (int j = 0; j < schedule.size(); j++)
+		{
+			endTime = schedule[j].start + schedule[j].time;
+			if (endTime < dueDate)
+			{
+				target += (dueDate - endTime) * schedule[j].earliness;
+			}
+			if (endTime > dueDate)
+			{
+				target += (endTime - dueDate) * schedule[j].tardiness;
+			}
+		}
+		if (r == 0)
+		{
+			globalTarget = target;
+			//cout << "r=0, " << target << "\t";
+		}
+
+		if (target < globalTarget)
+		{
+			globalTarget = target;
+			globalR = r;
+		}
+	}
+	return globalR;
+}
+
+vector <instance> generateInitInstances(vector <task> &schedule, int instancesNumber, int dueDate)
+{
+	vector <instance> instances;
+	for (int k = 0; k < instancesNumber; k++)
+	{
+		instances.push_back(schedule);
+	}
+	instances[0].r = rCalculate(instances[0].schedule, dueDate);
+	int randMultiply = 2;
+	for (int i = 1; i < instances.size(); i++)
+	{
+		int maxIndex = instances[i].schedule.size();
 		for (int k = 0; k < maxIndex * randMultiply; k++)
 		{
 			int index1 = rand() % maxIndex;
@@ -106,8 +158,9 @@ vector <vector <task>> generateInitInstances(vector <task> &schedule, int instan
 			{
 				index2 = rand() % maxIndex;
 			} while (index1 == index2);
-			swap(instances[i][index1], instances[i][index2]);
+			swap(instances[i].schedule[index1], instances[i].schedule[index2]);
 		}
+		instances[i].r = rCalculate(instances[i].schedule, dueDate);
 	}
 	return instances;
 }
@@ -125,11 +178,13 @@ void mutation(vector <task> &schedule)
 
 vector <task> crossover(vector <task> scheduleA, vector <task> scheduleB)
 {
+
 	return scheduleA;
 }
 
-vector <vector <task> >selection(vector <vector <task> >&instances, int intancesNumber)
+vector <instance>selection(vector <instance>&instances, int intancesNumber)
 {
+
 	return instances;
 }
 
@@ -143,9 +198,8 @@ int main()
 	int totalTime;
 	float h = 0.6;
 	handler >> n;
-	vector <task> tabEarliness;
-	vector <task> tabTardiness;
 	vector <task> schedule;
+	vector <instance> instances;
 
 	//ARGS
 	int instancesNumber = 30;
@@ -166,14 +220,7 @@ int main()
 		for (int k = 0; k < operationNum; k++)
 		{
 			handler >> time >> earliness >> tardiness;
-			if (earliness < tardiness)
-			{
-				tabEarliness.emplace_back(k + 1, time, earliness, tardiness);
-			}
-			else
-			{
-				tabTardiness.emplace_back(k + 1, time, earliness, tardiness);
-			}
+			schedule.emplace_back(k + 1, time, earliness, tardiness);
 			totalTime += time;
 		}
 
@@ -182,54 +229,9 @@ int main()
 		int dueDate = floor(totalTime * h);
 		//cout << "#" << i + 1 << " Total time: " << totalTime << " Due date: " << dueDate << "\n";
 
-		//sort (by earliness and tardiness) scheduling
-		sort(tabEarliness.begin(), tabEarliness.end(), compareEarliness);
-		sort(tabTardiness.rbegin(), tabTardiness.rend(), compareTardiness); //descending sort
-		schedule = tabEarliness;
-		schedule.insert(schedule.end(), tabTardiness.begin(), tabTardiness.end()); //copy vector
+		instances = generateInitInstances(schedule, instancesNumber, dueDate);
 
-		//r setting
-		int target;
-		int endTime;
-		int globalTarget;
-		int globalR = 0;
-		int step = max(1, static_cast<int>(round(1.0 * dueDate / 100)));
-		for (int r = 0; r <= dueDate / 2; r += step)
-		{
-			schedule[0].start = r;
-
-			//set start time
-			for (int j = 1; j < schedule.size(); j++)
-			{
-				schedule[j].start = schedule[j - 1].start + schedule[j - 1].time;
-			}
-
-			//calculate value of target function
-			target = 0;
-			for (int j = 0; j < schedule.size(); j++)
-			{
-				endTime = schedule[j].start + schedule[j].time;
-				if (endTime < dueDate)
-				{
-					target += (dueDate - endTime) * schedule[j].earliness;
-				}
-				if (endTime > dueDate)
-				{
-					target += (endTime - dueDate) * schedule[j].tardiness;
-				}
-			}
-			if (r == 0)
-			{
-				globalTarget = target;
-				//cout << "r=0, " << target << "\t";
-			}
-
-			if (target < globalTarget)
-			{
-				globalTarget = target;
-				globalR = r;
-			}
-		}
+		
 
 		timeEnd = chrono::system_clock::now();
 		chrono::duration <double>  processingTime = timeEnd - timeStart;
@@ -245,8 +247,6 @@ int main()
 		}
 		results.close();
 
-		tabEarliness.clear();
-		tabTardiness.clear();
 		schedule.clear();
 	}
 	handler.close();
