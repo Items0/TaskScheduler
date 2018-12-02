@@ -1,4 +1,7 @@
 #pragma once
+#include <vector>
+#include "task.h"
+
 class instance
 {
 public:
@@ -6,7 +9,7 @@ public:
 	int target;
 	std::vector <task> schedule;
 	instance();
-	instance(std::vector <task>);
+	instance(std::vector <task> schedule);
 	~instance();
 };
 

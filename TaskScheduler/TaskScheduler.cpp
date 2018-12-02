@@ -165,7 +165,7 @@ vector <instance> generateInitInstances(vector <task> &schedule, int instancesNu
 	return instances;
 }
 
-void mutation(vector <task> &schedule)
+vector<task> mutation(vector <task> schedule)
 {
 	int index1 = rand() % schedule.size();
 	int index2;
@@ -174,11 +174,15 @@ void mutation(vector <task> &schedule)
 		index2 = rand() % schedule.size();
 	} while (index1 == index2);
 	swap(schedule[index1], schedule[index2]);
+	return schedule;
 }
 
 vector <task> crossover(vector <task> scheduleA, vector <task> scheduleB)
 {
+	//vector <task> result(scheduleA.begin(), scheduleA.begin() + scheduleA.size() / 2 - 1);
+	//set_difference(scheduleB.begin(), scheduleB.end(), result.begin(), result.end(), scheduleA.begin());
 
+	//result.insert();
 	return scheduleA;
 }
 
@@ -231,22 +235,49 @@ int main()
 
 		instances = generateInitInstances(schedule, instancesNumber, dueDate);
 
+		//processing
+		for (int iter = 0; iter < 10; iter++) // iteration number or processingTime < 1 min
+		{
+			//cout << iter << endl;
+			for (int k = 0; k < instances.size(); k++)
+			{
+				if (rand() % 100 <= mutationChance)
+				{
+					//cout << "Mutation" << endl;
+					instances.push_back(mutation(instances[k].schedule));
+				}
+
+				if (rand() % 100 <= crossOverChance)
+				{
+					//cout << "Crossover" << endl;
+					int index2;
+					do
+					{
+						index2 = rand() % instances.size();
+					} while (k == index2);
+					instances.push_back(crossover(instances[k].schedule, instances[index2].schedule));
+				}
+			}
+
+			instances = selection(instances, instancesNumber);
+		}
 		
+		// only one - the best instance
 
 		timeEnd = chrono::system_clock::now();
 		chrono::duration <double>  processingTime = timeEnd - timeStart;
 
-		//cout << "r=" << globalR << ", " << globalTarget << endl;
 		cout << "#" << i + 1 << " processingTime: " << processingTime.count() << endl;
+
 		//save results
 		results.open("../Results/sch" + to_string(operationNum) + "_" + to_string(i + 1) + "_" + to_string(static_cast<int>(h * 10)) + ".txt", ios::out);
-		results << h * 10 << "\n" << globalTarget << "\n" << operationNum << "\n" << globalR << "\n";
+		results << h * 10 << "\n" << instances[0].target << "\n" << operationNum << "\n" << instances[0].r << "\n";
 		for (int i = 0; i < schedule.size(); i++)
 		{
 			results << schedule[i].time << "\t" << schedule[i].earliness << "\t" << schedule[i].tardiness << "\n";
 		}
 		results.close();
-
+		instances.clear();
 		schedule.clear();
 	}
 	handler.close();
