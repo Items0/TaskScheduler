@@ -92,7 +92,12 @@ bool compareTardiness(task &a, task &b)
 	}
 }
 
-int rCalculate(vector <task> schedule, int dueDate)
+bool compareInstances(instance &a, instance &b)
+{
+	return a.target < b.target;
+}
+
+void rCalculate(instance &myInstance, int dueDate)
 {
 	int target;
 	int endTime;
@@ -101,26 +106,26 @@ int rCalculate(vector <task> schedule, int dueDate)
 	int step = max(1, static_cast<int>(round(1.0 * dueDate / 100)));
 	for (int r = 0; r <= dueDate / 2; r += step)
 	{
-		schedule[0].start = r;
+		myInstance.schedule[0].start = r;
 
 		//set start time
-		for (int j = 1; j < schedule.size(); j++)
+		for (int j = 1; j < myInstance.schedule.size(); j++)
 		{
-			schedule[j].start = schedule[j - 1].start + schedule[j - 1].time;
+			myInstance.schedule[j].start = myInstance.schedule[j - 1].start + myInstance.schedule[j - 1].time;
 		}
 
 		//calculate value of target function
 		target = 0;
-		for (int j = 0; j < schedule.size(); j++)
+		for (int j = 0; j < myInstance.schedule.size(); j++)
 		{
-			endTime = schedule[j].start + schedule[j].time;
+			endTime = myInstance.schedule[j].start + myInstance.schedule[j].time;
 			if (endTime < dueDate)
 			{
-				target += (dueDate - endTime) * schedule[j].earliness;
+				target += (dueDate - endTime) * myInstance.schedule[j].earliness;
 			}
 			if (endTime > dueDate)
 			{
-				target += (endTime - dueDate) * schedule[j].tardiness;
+				target += (endTime - dueDate) * myInstance.schedule[j].tardiness;
 			}
 		}
 		if (r == 0)
@@ -135,7 +140,8 @@ int rCalculate(vector <task> schedule, int dueDate)
 			globalR = r;
 		}
 	}
-	return globalR;
+	myInstance.r = globalR;
+	myInstance.target = globalTarget;
 }
 
 vector <instance> generateInitInstances(vector <task> &schedule, int instancesNumber, int dueDate)
@@ -145,7 +151,7 @@ vector <instance> generateInitInstances(vector <task> &schedule, int instancesNu
 	{
 		instances.push_back(schedule);
 	}
-	instances[0].r = rCalculate(instances[0].schedule, dueDate);
+	rCalculate(instances[0], dueDate);
 	int randMultiply = 2;
 	for (int i = 1; i < instances.size(); i++)
 	{
@@ -160,7 +166,7 @@ vector <instance> generateInitInstances(vector <task> &schedule, int instancesNu
 			} while (index1 == index2);
 			swap(instances[i].schedule[index1], instances[i].schedule[index2]);
 		}
-		instances[i].r = rCalculate(instances[i].schedule, dueDate);
+		rCalculate(instances[i], dueDate);
 	}
 	return instances;
 }
@@ -179,24 +185,34 @@ vector<task> mutation(vector <task> schedule)
 
 vector <task> crossover(vector <task> scheduleA, vector <task> scheduleB)
 {
-	//vector <task> result(scheduleA.begin(), scheduleA.begin() + scheduleA.size() / 2 - 1);
-	//set_difference(scheduleB.begin(), scheduleB.end(), result.begin(), result.end(), scheduleA.begin());
+	vector <task> result(scheduleA.begin(), scheduleA.begin() + scheduleA.size() / 2);
+	for (int k = 0; k < result.size(); k++)
+	{
+		for (int j = 0; j < scheduleB.size(); j++)
+		{
+			if (result[k].id == scheduleB[j].id)
+			{
+				scheduleB.erase(scheduleB.begin() + j);
+				break;
+			}
+		}
+	}
 
-	//result.insert();
-	return scheduleA;
+	result.insert(result.end(), scheduleB.begin(), scheduleB.end());
+	return result;
 }
 
-vector <instance>selection(vector <instance>&instances, int intancesNumber)
+void selection(vector <instance>&instances, int instancesNumber)
 {
-
-	return instances;
+	sort(instances.begin(), instances.end(), compareInstances);
+	instances.resize(instancesNumber);
 }
 
 int main()
 {
 	srand(time(NULL));
 
-	fstream handler("../Instances/sch500.txt", ios::in);
+	fstream handler("../Instances/sch10.txt", ios::in);
 	fstream results;
 	int n;
 	int totalTime;
@@ -245,6 +261,7 @@ int main()
 				{
 					//cout << "Mutation" << endl;
 					instances.push_back(mutation(instances[k].schedule));
+					rCalculate(instances.back(), dueDate);
 				}
 
 				if (rand() % 100 <= crossOverChance)
@@ -256,10 +273,11 @@ int main()
 						index2 = rand() % instances.size();
 					} while (k == index2);
 					instances.push_back(crossover(instances[k].schedule, instances[index2].schedule));
+					rCalculate(instances.back(), dueDate);
 				}
 			}
 
-			instances = selection(instances, instancesNumber);
+			selection(instances, instancesNumber);
 		}
 		
 		// only one - the best instance
