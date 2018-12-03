@@ -66,6 +66,7 @@ void validate(string filename)
 	{
 		cout << "Error! Different values\n";
 	}
+	cout << "checkTarget = " << checkTarget << "\t target = " << target << endl;
 }
 
 bool compareEarliness(task &a, task &b)
@@ -212,17 +213,17 @@ int main()
 {
 	srand(time(NULL));
 
-	fstream handler("../Instances/sch10.txt", ios::in);
+	fstream handler("../Instances/sch50.txt", ios::in);
 	fstream results;
 	int n;
 	int totalTime;
-	float h = 0.6;
+	float h = 0.8;
 	handler >> n;
 	vector <task> schedule;
 	vector <instance> instances;
 
 	//ARGS
-	int instancesNumber = 30;
+	int instancesNumber = 100;
 	int mutationChance = 20;
 	int crossOverChance = 10;
 	int improveRate = 10;
@@ -252,9 +253,10 @@ int main()
 		instances = generateInitInstances(schedule, instancesNumber, dueDate);
 
 		//processing
-		for (int iter = 0; iter < 10; iter++) // iteration number or processingTime < 1 min
+		int iterNo = 200;
+		for (int iter = 0; iter < iterNo; iter++) // iteration number or processingTime < 1 min
 		{
-			//cout << iter << endl;
+			cout << iter << " / " << iterNo << "\r";
 			for (int k = 0; k < instances.size(); k++)
 			{
 				if (rand() % 100 <= mutationChance)
@@ -276,11 +278,10 @@ int main()
 					rCalculate(instances.back(), dueDate);
 				}
 			}
-
 			selection(instances, instancesNumber);
 		}
 		
-		// only one - the best instance
+		//the best instance in instance[0]
 
 		timeEnd = chrono::system_clock::now();
 		chrono::duration <double>  processingTime = timeEnd - timeStart;
@@ -292,16 +293,15 @@ int main()
 		results << h * 10 << "\n" << instances[0].target << "\n" << operationNum << "\n" << instances[0].r << "\n";
 		for (int i = 0; i < schedule.size(); i++)
 		{
-			results << schedule[i].time << "\t" << schedule[i].earliness << "\t" << schedule[i].tardiness << "\n";
+			results << instances[0].schedule[i].time << "\t" << instances[0].schedule[i].earliness << "\t" << instances[0].schedule[i].tardiness << "\n";
 		}
 		results.close();
 		instances.clear();
 		schedule.clear();
 	}
 	handler.close();
-
-
-	//validate("sch100_10_6.txt");
+	
+	//validate("sch50_2_8.txt");
 }
 
 
