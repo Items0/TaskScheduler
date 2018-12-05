@@ -213,20 +213,23 @@ int main()
 {
 	srand(time(NULL));
 
-	fstream handler("../Instances/sch50.txt", ios::in);
+	fstream handler("../Instances/sch1000.txt", ios::in);
 	fstream results;
 	int n;
 	int totalTime;
-	float h = 0.8;
+	float h = 0.6;
 	handler >> n;
 	vector <task> schedule;
 	vector <instance> instances;
+	int topResult;
 
 	//ARGS
-	int instancesNumber = 100;
+	int instancesNumber = 20;
 	int mutationChance = 20;
 	int crossOverChance = 10;
-	int improveRate = 10;
+	int equalRounds = 40;
+	int roundCounter = equalRounds;
+	int timeLimit = 60;
 
 	for (int i = 0; i < n; i++)
 	{
@@ -246,17 +249,20 @@ int main()
 		}
 
 		chrono::time_point <chrono::system_clock> timeStart, timeEnd;
+		chrono::duration <double>  processingTime;
 		timeStart = chrono::system_clock::now();
+		timeEnd = timeStart;
+		processingTime = timeEnd - timeStart;
 		int dueDate = floor(totalTime * h);
 		//cout << "#" << i + 1 << " Total time: " << totalTime << " Due date: " << dueDate << "\n";
 
 		instances = generateInitInstances(schedule, instancesNumber, dueDate);
-
+		topResult = instances[0].target;
 		//processing
-		int iterNo = 200;
-		for (int iter = 0; iter < iterNo; iter++) // iteration number or processingTime < 1 min
+		//int iterNo = 200;
+		for (int iter = 0; ; iter++) // iteration number or processingTime < 1 min
 		{
-			cout << iter << " / " << iterNo << "\r";
+			cout << iter << " / " << processingTime.count() << "\r";
 			for (int k = 0; k < instances.size(); k++)
 			{
 				if (rand() % 100 <= mutationChance)
@@ -279,12 +285,38 @@ int main()
 				}
 			}
 			selection(instances, instancesNumber);
+
+			//stop conditions
+			timeEnd = chrono::system_clock::now();
+			processingTime = timeEnd - timeStart;
+
+			//topResult value update
+			if (instances[0].target < topResult)
+			{
+				topResult = instances[0].target;
+				roundCounter = equalRounds;
+			}
+			else
+			{
+				roundCounter--;
+			}
+
+			// breaks
+			if (processingTime.count() > timeLimit)
+			{
+				cout << "Limit: timeLimit" << endl;
+				break;
+			}
+			if (roundCounter < 0)
+			{
+				cout << "Limit: roundCounter" << endl;
+				break;
+			}
 		}
 		
 		//the best instance in instance[0]
-
 		timeEnd = chrono::system_clock::now();
-		chrono::duration <double>  processingTime = timeEnd - timeStart;
+		processingTime = timeEnd - timeStart;
 
 		cout << "#" << i + 1 << " processingTime: " << processingTime.count() << endl;
 
@@ -301,7 +333,5 @@ int main()
 	}
 	handler.close();
 	
-	//validate("sch50_2_8.txt");
+	//validate("sch50_10_2.txt");
 }
-
-
