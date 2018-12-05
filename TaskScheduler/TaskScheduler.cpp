@@ -172,6 +172,30 @@ vector <instance> generateInitInstances(vector <task> &schedule, int instancesNu
 	return instances;
 }
 
+vector<task> initalSchedule(vector <task> schedule)
+{
+	vector <task> tabEarliness;
+	vector <task> tabTardiness;
+	for (int k = 0; k < schedule.size(); k++)
+	{
+		if (schedule[k].earliness < schedule[k].tardiness)
+		{
+			tabEarliness.push_back(schedule[k]);
+		}
+		else
+		{
+			tabTardiness.push_back(schedule[k]);
+		}
+	}
+	//sort (by earliness and tardiness) scheduling
+	sort(tabEarliness.begin(), tabEarliness.end(), compareEarliness);
+	sort(tabTardiness.rbegin(), tabTardiness.rend(), compareTardiness); //descending sort
+	schedule.clear();
+	schedule = tabEarliness;
+	schedule.insert(schedule.end(), tabTardiness.begin(), tabTardiness.end()); //copy vector
+	return schedule;
+}
+
 vector<task> mutation(vector <task> schedule)
 {
 	int index1 = rand() % schedule.size();
@@ -213,7 +237,7 @@ int main()
 {
 	srand(time(NULL));
 
-	fstream handler("../Instances/sch1000.txt", ios::in);
+	fstream handler("../Instances/sch500.txt", ios::in);
 	fstream results;
 	int n;
 	int totalTime;
@@ -227,7 +251,7 @@ int main()
 	int instancesNumber = 20;
 	int mutationChance = 20;
 	int crossOverChance = 10;
-	int equalRounds = 40;
+	int equalRounds = 120;
 	int roundCounter = equalRounds;
 	int timeLimit = 60;
 
@@ -255,8 +279,7 @@ int main()
 		processingTime = timeEnd - timeStart;
 		int dueDate = floor(totalTime * h);
 		//cout << "#" << i + 1 << " Total time: " << totalTime << " Due date: " << dueDate << "\n";
-
-		instances = generateInitInstances(schedule, instancesNumber, dueDate);
+		instances = generateInitInstances(initalSchedule(schedule), instancesNumber, dueDate);
 		topResult = instances[0].target;
 		//processing
 		//int iterNo = 200;
