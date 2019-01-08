@@ -237,7 +237,7 @@ int main()
 {
 	srand(time(NULL));
 
-	fstream handler("../Instances/sch500.txt", ios::in);
+	fstream handler("../Instances/sch200.txt", ios::in);
 	fstream results;
 	int n;
 	int totalTime;
@@ -249,14 +249,15 @@ int main()
 
 	//ARGS
 	int instancesNumber = 20;
-	int mutationChance = 20;
-	int crossOverChance = 10;
-	int equalRounds = 120;
-	int roundCounter = equalRounds;
+	int mutationChance = 50;
+	int crossOverChance = 20;
+	int equalRounds = 500;
+	int roundCounter;
 	int timeLimit = 60;
 
 	for (int i = 0; i < n; i++)
 	{
+		roundCounter = equalRounds;
 		int operationNum;
 		handler >> operationNum;
 		int time;
@@ -332,7 +333,7 @@ int main()
 			}
 			if (roundCounter < 0)
 			{
-				cout << "Limit: roundCounter" << endl;
+				cout << "Limit: roundCounter: " << iter << endl;
 				break;
 			}
 		}
